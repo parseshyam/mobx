@@ -1,0 +1,77 @@
+.login-header {
+  width: 100%;
+  display: flex;
+  padding: 15px;
+  justify-content: center;
+  .header-content {
+    min-width: 75%;
+    display: flex;
+    .login-logo {
+      display: flex;
+      flex: 1;
+    }
+    .login-menu {
+      display: flex;
+      justify-content: right;
+      .public-pages {
+        .menu-option {
+          display: inline;
+          line-height: 2;
+          margin-right: 20px;
+          font-size: 16px;
+          font-weight: 500;
+          cursor: pointer;
+          color: #9e9e9e;
+        }
+      }
+      .link-buttons {
+        display: flex;
+        justify-content: space-between;
+        .ant-btn {
+          // border: none;
+          border-radius: 16px;
+        }
+        .signup-btn {
+          margin-right: 10px;
+        }
+      }
+    }
+  }
+  @media (max-width: 767px) {
+    .header-content {
+      min-width: 75%;
+      display: flex;
+      flex-direction: column;
+      .login-logo {
+        display: flex;
+        flex: 1;
+      }
+      .login-menu {
+        display: flex;
+        flex-direction: column;
+        justify-content: right;
+        .public-pages {
+          .menu-option {
+            display: inline;
+            line-height: 2;
+            margin-right: 20px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #9e9e9e;
+          }
+        }
+        .link-buttons {
+          display: flex;
+          justify-content: flex-start;
+          .ant-btn {
+            border-radius: 16px;
+          }
+          .signup-btn {
+            margin-right: 10px;
+          }
+        }
+      }
+    }
+  }
+}

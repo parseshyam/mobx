@@ -1,0 +1,49 @@
+.login {
+  display: flex;
+  height: 80vh;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+
+  .login-card {
+    -webkit-font-feature-settings: 'tnum';
+    font-feature-settings: 'tnum';
+    font-variant: tabular-nums;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    padding: 45px 11px 4px;
+    -moz-box-shadow: 0 0 3px #ccc;
+    -webkit-box-shadow: 0 0 3px #ccc;
+    box-shadow: 0 0 3px #ccc;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+    .login-title {
+      width: 100%;
+      padding: 10px;
+      font-size: 20px;
+      font-weight: 450;
+      color: #31b8ff;
+    }
+    .ant-input {
+      width: 300px;
+    }
+    .reg-submit {
+      display: flex;
+      justify-content: space-between;
+      .ant-btn {
+        border: none;
+        border-radius: 21px 0px 0px 0px;
+      }
+    }
+    .forgot-rem {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}
