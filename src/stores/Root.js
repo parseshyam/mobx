@@ -1,22 +1,27 @@
 import { decorate, observable } from 'mobx';
 import { post } from 'services';
 import { createContext } from 'react';
-import { observer } from 'mobx-react-lite';
-
+import { UserStore } from './User';
 class RootStore {
   loading = false;
   error = '';
   userData = {};
+  LoggedIn = false;
+  user = null;
+
+  constructor() {
+    this.userStore = new UserStore(this);
+  }
+
   authenticateUser = async body => {
-    console.log('what this holds', this);
     try {
-      console.log('BODY', body);
       this.loading = true;
       const response = await post({
         url: '/users/login',
         body,
       });
       console.log({ response });
+      return response.data;
     } catch (e) {
       this.error = e.message;
       console.log(e);

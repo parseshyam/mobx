@@ -2,11 +2,12 @@ import React, { useContext } from 'react';
 import './Login.scss';
 import { withRouter } from 'react-router-dom';
 import { Form, Icon, Input, Button, Avatar } from 'antd';
-import SideNavBar from 'components/SideNavBar/SideNavBar';
 import { rootStore } from 'stores/Root';
 import { observer } from 'mobx-react';
-const Login = ({ form }) => {
-  const { authenticateUser, loading, error } = useContext(rootStore);
+const Login = props => {
+  console.log(props);
+  const { form, history } = props;
+  const { loading, error, authenticateUser } = useContext(rootStore);
   console.log(loading, error);
   const handleSubmit = e => {
     e.preventDefault();
@@ -14,18 +15,20 @@ const Login = ({ form }) => {
       console.log(values);
       if (err) {
         console.log('err');
-
         return;
       }
-      authenticateUser({
+      let data = authenticateUser({
         ...values,
       });
+      if (data) {
+        console.log(data);
+        history.push('/home');
+      }
     });
   };
 
   return (
     <React.Fragment>
-      <SideNavBar />
       <div className="login">
         <div className="login-card">
           <Avatar size={64} icon="user" />
@@ -62,18 +65,19 @@ const Login = ({ form }) => {
             </Form.Item>
             <Form.Item>
               {/* {form.getFieldDecorator('remember', {
-                valuePropName: 'checked',
-                initialValue: true,
-              })(
-                <div className="forgot-rem">
-                  <Checkbox>Remember me</Checkbox>
-                  <a className="login-form-forgot" href=" ">
-                    Forgot password ?
-                  </a>
-                </div>
-              )} */}
+            valuePropName: 'checked',
+            initialValue: true,
+          })(
+            <div className="forgot-rem">
+            <Checkbox>Remember me</Checkbox>
+            <a className="login-form-forgot" href=" ">
+            Forgot password ?
+            </a>
+            </div>
+          )} */}
               <div className="reg-submit">
                 <Button
+                  loading={loading}
                   type="primary"
                   htmlType="submit"
                   className="login-form-button"

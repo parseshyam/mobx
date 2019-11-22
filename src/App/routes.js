@@ -2,9 +2,8 @@ import React, { Suspense, lazy } from 'react';
 import { createBrowserHistory } from 'history';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import { Spin, Icon } from 'antd';
-
+import Header from '../components/common/Header';
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
-
 export const history = createBrowserHistory();
 
 export const routes = {
@@ -24,17 +23,17 @@ export const routes = {
     component: lazy(() => import('pages/Signup/Signup')),
   },
   page1: {
-    path: '/Page1',
+    path: '/page1',
     exact: true,
     component: lazy(() => import('pages/Page1/Page1')),
   },
   page2: {
-    path: '/Page2',
+    path: '/page2',
     exact: true,
     component: lazy(() => import('pages/Page2/Page2')),
   },
   page3: {
-    path: '/Page3',
+    path: '/page3',
     exact: true,
     component: lazy(() => import('pages/Page3/Page3')),
   },
@@ -52,7 +51,6 @@ export const Routes = () => {
             alignContent: 'center',
             justifyContent: 'center',
             height: '100vh',
-            margin: 0,
           }}
         >
           <Spin indicator={antIcon} />
@@ -60,6 +58,7 @@ export const Routes = () => {
       }
     >
       <BrowserRouter history={createBrowserHistory}>
+        <Header />
         <Switch>
           {renderRoutes.map(([key, val]) => (
             <Route
