@@ -2,17 +2,18 @@ import { decorate, observable } from 'mobx';
 import { post } from 'services';
 import { createContext } from 'react';
 import { UserStore } from './User';
+import { PoolsStore } from './Pools';
+
 class RootStore {
   loading = false;
   error = '';
   userData = {};
   LoggedIn = false;
   user = null;
-
   constructor() {
     this.userStore = new UserStore(this);
+    this.PoolsStore = new PoolsStore(this);
   }
-
   authenticateUser = async body => {
     try {
       this.loading = true;

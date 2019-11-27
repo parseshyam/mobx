@@ -2,7 +2,6 @@ import React, { useContext, useState, useEffect } from 'react';
 import { rootStore } from 'stores/Root';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
-import Select from '../../components/select/Select';
 import {
   Table,
   Input,
@@ -12,7 +11,6 @@ import {
   Pagination,
   Button,
   Icon,
-  Divider,
 } from 'antd';
 import Highlighter from 'react-highlight-words';
 
@@ -35,6 +33,7 @@ const EditableCell = props => {
       record,
       index,
       children,
+
       ...restProps
     } = props;
     return (
@@ -59,22 +58,23 @@ const EditableCell = props => {
   };
   return <EditableContext.Consumer>{renderCell}</EditableContext.Consumer>;
 };
+// address
+// categoryId
+// contactEmail
+// contactName
+// contactPhone
+// createdAt
+// deletedAt
+// description
+// id
+// location
+// pictures
+// poolName
+// updatedAt
 
 const FetchPools = props => {
   const {
-    userStore: {
-      users,
-      getUsers,
-      loading,
-      block,
-      unBlock,
-      blockLoading,
-      deleteLoading,
-      delete: _delete,
-      unDelete,
-      totalCount,
-      editUser,
-    },
+    PoolsStore: { loading, pools, getPools, totalCount, updatePool },
   } = useContext(rootStore);
   console.log(loading);
   const [page, setPage] = useState(1);
@@ -83,19 +83,13 @@ const FetchPools = props => {
   const [editingKey, setEditingKey] = useState('');
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
-  const [sortData, setSortData] = useState([
-    { sortBy: 'ASC', sortValue: 'id' },
-  ]);
   useEffect(() => {
-    let body = {};
-    body.sort = sortData;
-    body.search = [];
-    getUsers(page, count, body);
-  }, [page, count, sortData]);
+    getPools(page, count, {});
+  }, [page, count]);
 
   useEffect(() => {
-    setData(users);
-  }, [users]);
+    setData(pools);
+  }, [pools]);
 
   const onChange = pageNumber => {
     setPage(pageNumber);
@@ -171,23 +165,6 @@ const FetchPools = props => {
     setSearchedColumn(dataIndex);
   };
 
-  const handleOptChange = (value = []) => {
-    let array = [];
-    if (value.length <= 0) {
-      setSortData([
-        {
-          sortBy: 'ASC',
-          sortValue: 'id',
-        },
-      ]);
-    } else {
-      value.map(val => {
-        return array.push(JSON.parse(val));
-      });
-      setSortData(array);
-    }
-  };
-
   const handleReset = clearFilters => {
     clearFilters();
     setSearchText('');
@@ -198,9 +175,9 @@ const FetchPools = props => {
   };
   const columns = [
     {
-      title: 'Id',
-      dataIndex: 'id',
       key: 'id',
+      title: 'id',
+      dataIndex: 'id',
       editable: false,
       ...getColumnSearchProps('id'),
       onFilter: (value, record) => record.id.includes(value),
@@ -208,58 +185,60 @@ const FetchPools = props => {
       sortDirections: ['descend', 'ascend'],
     },
     {
-      title: 'First Name',
-      dataIndex: 'firstName',
-      key: 'firstName',
+      title: 'Address',
+      dataIndex: 'address',
       editable: true,
-      ...getColumnSearchProps('firstName'),
-      onFilter: (value, record) => record.firstName.includes(value),
-      sorter: (a, b) => a.firstName.length - b.firstName.length,
+      key: 'address',
+      ...getColumnSearchProps('address'),
+      onFilter: (value, record) => record.address.includes(value),
+      sorter: (a, b) => a.address.length - b.address.length,
       sortDirections: ['descend', 'ascend'],
-      onFilter: (value, record) => record.firstName.includes(value),
+      onFilter: (value, record) => record.address.includes(value),
     },
     {
-      title: 'Last Name',
-      dataIndex: 'lastName',
-      key: 'lastName',
-      ...getColumnSearchProps('lastName'),
-      onFilter: (value, record) => record.lastName.indexOf(value) === 0,
-      sorter: (a, b) => a.lastName.length - b.lastName.length,
+      key: 'categoryId',
+      title: 'categoryId',
+      dataIndex: 'categoryId',
+      editable: true,
+    },
+    {
+      key: 'contactEmail',
+      title: 'contactEmail',
+      dataIndex: 'contactEmail',
+      editable: true,
+      ...getColumnSearchProps('contactEmail'),
+      onFilter: (value, record) => record.contactEmail.includes(value),
+      sorter: (a, b) => a.address.contactEmail - b.contactEmail.length,
       sortDirections: ['descend', 'ascend'],
-      editable: true,
+      onFilter: (value, record) => record.contactEmail.includes(value),
     },
     {
-      title: 'Email',
-      dataIndex: 'email',
-      key: 'email',
-      ...getColumnSearchProps('email'),
-      onFilter: (value, record) => record.email.indexOf(value) === 0,
-      sorter: (a, b) => a.email.length - b.email.length,
+      key: 'contactName',
+      title: 'contactName',
+      dataIndex: 'contactName',
+      editable: true,
+      ...getColumnSearchProps('contactName'),
+      onFilter: (value, record) => record.contactName.includes(value),
+      sorter: (a, b) => a.contactName.length - b.contactName.length,
       sortDirections: ['descend', 'ascend'],
-      editable: true,
+      onFilter: (value, record) => record.contactName.includes(value),
     },
     {
-      title: 'Phone',
-      dataIndex: 'phoneNumber',
-      key: 'phoneNumber',
-      ...getColumnSearchProps('phoneNumber'),
-      defaultSortOrder: 'descend',
-      sorter: (a, b) => a.phoneNumber - b.phoneNumber,
+      key: 'contactPhone',
+      title: 'contactPhone',
+      dataIndex: 'contactPhone',
       editable: true,
+      ...getColumnSearchProps('contactPhone'),
+      onFilter: (value, record) => record.contactPhone.includes(value),
+      sorter: (a, b) => a.contactPhone.length - b.contactPhone.length,
+      sortDirections: ['descend', 'ascend'],
+      onFilter: (value, record) => record.contactPhone.includes(value),
     },
     {
-      title: 'Notification',
-      dataIndex: 'notificationsOnOff',
-      key: 'notificationsOnOff',
-      ...getColumnSearchProps('notificationsOnOff'),
-      editable: true,
-    },
-    {
-      title: 'About',
-      dataIndex: 'about',
-      key: 'about',
-      ...getColumnSearchProps('about'),
-      editable: true,
+      key: 'createdAt',
+      title: 'createdAt',
+      dataIndex: 'createdAt',
+      editable: false,
     },
     {
       key: 'deletedAt',
@@ -268,39 +247,32 @@ const FetchPools = props => {
       editable: false,
     },
     {
-      title: 'Profile Picture',
-      dataIndex: 'profilePicture',
-      key: 'profilePicture',
-      ...getColumnSearchProps('profilePicture'),
+      key: 'description',
+      title: 'description',
+      dataIndex: 'description',
+      editable: true,
+      ...getColumnSearchProps('description'),
+      onFilter: (value, record) => record.description.includes(value),
+      sorter: (a, b) => a.description.length - b.description.length,
+      sortDirections: ['descend', 'ascend'],
+      onFilter: (value, record) => record.description.includes(value),
     },
     {
-      title: 'Action',
-      key: 'action',
-      render: (text, record) => (
-        <span>
-          <Button
-            loading={blockLoading === record.id}
-            onClick={() => {
-              record.isBlocked ? unBlock(record.id) : block(record.id);
-            }}
-            type={!record.isBlocked ? 'danger ' : 'primary'}
-          >
-            {record.isBlocked ? 'UNBLOCK' : '   BLOCK   '}
-          </Button>
-          <Divider type="vertical" />
-          <Button
-            loading={deleteLoading === record.id}
-            onClick={() => {
-              record.deletedAt !== null
-                ? unDelete(record.id)
-                : _delete(record.id);
-            }}
-            type={record.deletedAt !== null ? 'primary' : 'danger'}
-          >
-            {record.deletedAt !== null ? 'UN DELETE' : 'DELETE'}
-          </Button>
-        </span>
-      ),
+      key: 'location',
+      title: 'location',
+      dataIndex: 'location',
+      editable: true,
+    },
+    {
+      key: 'poolName',
+      title: 'poolName',
+      dataIndex: 'poolName',
+      editable: true,
+      ...getColumnSearchProps('poolName'),
+      onFilter: (value, record) => record.poolName.includes(value),
+      sorter: (a, b) => a.poolName.length - b.poolName.length,
+      sortDirections: ['descend', 'ascend'],
+      onFilter: (value, record) => record.poolName.includes(value),
     },
     {
       title: 'operation',
@@ -343,7 +315,7 @@ const FetchPools = props => {
       if (error) {
         return;
       }
-      editUser(row, key);
+      updatePool(row, key);
       const newData = [...data];
       const index = newData.findIndex(item => key === item.id);
       if (index > -1) {
@@ -386,7 +358,6 @@ const FetchPools = props => {
   });
   return (
     <div className="m-5">
-      <Select handleOptChange={handleOptChange} />
       <EditableContext.Provider value={props.form}>
         <Table
           components={components}
@@ -399,6 +370,7 @@ const FetchPools = props => {
           defaultExpandAllRows={true}
         />
       </EditableContext.Provider>
+      di
       <div className="mt-4">
         <Pagination
           showQuickJumper
@@ -416,4 +388,5 @@ const FetchPools = props => {
   );
 };
 const EditableFormTable = Form.create()(observer(FetchPools));
+
 export default EditableFormTable;

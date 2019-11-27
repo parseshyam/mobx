@@ -2,65 +2,22 @@ import React, { useContext, useState, useEffect } from 'react';
 import { rootStore } from 'stores/Root';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
-import Select from '../../components/select/Select';
 import {
+  Pagination,
   Table,
+  Divider,
+  Button,
   Input,
+  Icon,
   InputNumber,
   Popconfirm,
   Form,
-  Pagination,
-  Button,
-  Icon,
-  Divider,
 } from 'antd';
 import Highlighter from 'react-highlight-words';
+import Select from '../../components/select/Select';
+import Modal from 'components/modal/Modal';
 
-const EditableContext = React.createContext();
-
-const EditableCell = props => {
-  const getInput = () => {
-    if (props.inputType === 'number') {
-      return <InputNumber />;
-    }
-    return <Input />;
-  };
-
-  const renderCell = ({ getFieldDecorator }) => {
-    const {
-      editing,
-      dataIndex,
-      title,
-      inputType,
-      record,
-      index,
-      children,
-      ...restProps
-    } = props;
-    return (
-      <td {...restProps}>
-        {editing ? (
-          <Form.Item style={{ margin: 0 }}>
-            {getFieldDecorator(dataIndex, {
-              rules: [
-                {
-                  required: true,
-                  message: `Please Input ${title}!`,
-                },
-              ],
-              initialValue: record[dataIndex],
-            })(getInput())}
-          </Form.Item>
-        ) : (
-          children
-        )}
-      </td>
-    );
-  };
-  return <EditableContext.Consumer>{renderCell}</EditableContext.Consumer>;
-};
-
-const FetchPools = props => {
+const FetchUsers = props => {
   const {
     userStore: {
       users,
@@ -73,34 +30,38 @@ const FetchPools = props => {
       delete: _delete,
       unDelete,
       totalCount,
-      editUser,
     },
   } = useContext(rootStore);
-  console.log(loading);
+  const [data, setData] = useState(users);
+  const [editingKey, setEditingKey] = useState('');
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(5);
-  const [data, setData] = useState([]);
-  const [editingKey, setEditingKey] = useState('');
+  const [showModal, changeShowModal] = useState(false);
+  const [modalData, setModalData] = useState({});
+  const [sortData, setSortData] = useState([
+    {
+      sortBy: 'ASC',
+      sortValue: 'id',
+    },
+  ]);
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
-  const [sortData, setSortData] = useState([
-    { sortBy: 'ASC', sortValue: 'id' },
-  ]);
+
   useEffect(() => {
+    console.log('sortData', sortData);
     let body = {};
     body.sort = sortData;
     body.search = [];
     getUsers(page, count, body);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, count, sortData]);
 
   useEffect(() => {
     setData(users);
   }, [users]);
+  console.log(toJS(users));
+  ///////
 
-  const onChange = pageNumber => {
-    setPage(pageNumber);
-  };
-  let searchInput = null;
   const getColumnSearchProps = dataIndex => ({
     filterDropdown: ({
       setSelectedKeys,
@@ -110,9 +71,9 @@ const FetchPools = props => {
     }) => (
       <div style={{ padding: 8 }}>
         <Input
-          ref={node => {
-            searchInput = node;
-          }}
+          // ref={node => {
+          //   this.searchInput = node;
+          // }}
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
           onChange={e =>
@@ -149,14 +110,14 @@ const FetchPools = props => {
         .includes(value.toLowerCase()),
     onFilterDropdownVisibleChange: visible => {
       if (visible) {
-        setTimeout(() => searchInput.select());
+        // setTimeout(() => this.searchInput.select());
       }
     },
     render: text =>
       searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[searchText]}
+          searchWords={[searchedColumn]}
           autoEscape
           textToHighlight={text.toString()}
         />
@@ -169,6 +130,15 @@ const FetchPools = props => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = clearFilters => {
+    clearFilters();
+    setSearchText('');
+  };
+  ///////
+  const onChange = pageNumber => {
+    setPage(pageNumber);
   };
 
   const handleOptChange = (value = []) => {
@@ -188,35 +158,26 @@ const FetchPools = props => {
     }
   };
 
-  const handleReset = clearFilters => {
-    clearFilters();
-    setSearchText('');
-  };
-
-  const handleCount = count => {
-    setCount(count);
-  };
   const columns = [
     {
       title: 'Id',
       dataIndex: 'id',
       key: 'id',
-      editable: false,
       ...getColumnSearchProps('id'),
-      onFilter: (value, record) => record.id.includes(value),
+      defaultSortOrder: 'descend',
       sorter: (a, b) => a.id - b.id,
-      sortDirections: ['descend', 'ascend'],
+      filterMultiple: true,
+      editable: true,
     },
     {
       title: 'First Name',
       dataIndex: 'firstName',
       key: 'firstName',
-      editable: true,
       ...getColumnSearchProps('firstName'),
-      onFilter: (value, record) => record.firstName.includes(value),
+      onFilter: (value, record) => record.firstName.indexOf(value) === 0,
       sorter: (a, b) => a.firstName.length - b.firstName.length,
       sortDirections: ['descend', 'ascend'],
-      onFilter: (value, record) => record.firstName.includes(value),
+      editable: true,
     },
     {
       title: 'Last Name',
@@ -262,12 +223,6 @@ const FetchPools = props => {
       editable: true,
     },
     {
-      key: 'deletedAt',
-      title: 'deletedAt',
-      dataIndex: 'deletedAt',
-      editable: false,
-    },
-    {
       title: 'Profile Picture',
       dataIndex: 'profilePicture',
       key: 'profilePicture',
@@ -299,121 +254,54 @@ const FetchPools = props => {
           >
             {record.deletedAt !== null ? 'UN DELETE' : 'DELETE'}
           </Button>
+          <Divider type="vertical" />
+          <Button
+            // loading={deleteLoading === record
+            onClick={() => {
+              // console.log(record);
+              // const id = record.id;
+              // console.log(id);
+              setModalData(record);
+              changeShowModal(!showModal);
+            }}
+            type="primary"
+          >
+            EDIT
+          </Button>
+          <Modal
+            data={modalData}
+            visible={showModal}
+            changeModal={() => changeShowModal(!showModal)}
+          />
         </span>
       ),
     },
-    {
-      title: 'operation',
-      dataIndex: 'operation',
-      render: (text, record) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <span>
-            <EditableContext.Consumer>
-              {form => (
-                <a
-                  onClick={() => save(form, record.id)}
-                  style={{ marginRight: 8 }}
-                >
-                  Save
-                </a>
-              )}
-            </EditableContext.Consumer>
-            <Popconfirm
-              title="Sure to cancel?"
-              onConfirm={() => cancel(record.id)}
-            >
-              <a>Cancel</a>
-            </Popconfirm>
-          </span>
-        ) : (
-          <a disabled={editingKey !== ''} onClick={() => edit(record.id)}>
-            Edit
-          </a>
-        );
-      },
-    },
   ];
-  const isEditing = record => record.id === editingKey;
-  const cancel = () => {
-    setEditingKey('');
-  };
-  const save = (form, key) => {
-    form.validateFields((error, row) => {
-      if (error) {
-        return;
-      }
-      editUser(row, key);
-      const newData = [...data];
-      const index = newData.findIndex(item => key === item.id);
-      if (index > -1) {
-        const item = newData[index];
-        newData.splice(index, 1, {
-          ...item,
-          ...row,
-        });
-        setData(newData);
-        setEditingKey('');
-      } else {
-        newData.push(row);
-        setData(newData);
-        setEditingKey('');
-      }
-    });
-  };
-  const edit = key => {
-    setEditingKey(key);
-  };
-  const components = {
-    body: {
-      cell: EditableCell,
-    },
-  };
-  const _columns = columns.map(col => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: record => ({
-        record,
-        inputType: col.dataIndex === 'age' ? 'number' : 'text',
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record),
-      }),
-    };
-  });
+
   return (
-    <div className="m-5">
-      <Select handleOptChange={handleOptChange} />
-      <EditableContext.Provider value={props.form}>
-        <Table
-          components={components}
-          bordered
-          dataSource={data}
-          columns={_columns}
-          rowClassName="editable-row"
-          pagination={false}
-          loading={loading}
-          defaultExpandAllRows={true}
-        />
-      </EditableContext.Provider>
-      <div className="mt-4">
-        <Pagination
-          showQuickJumper
-          defaultCurrent={1}
-          total={totalCount}
-          pageSize={count}
-          onChange={onChange}
-        />
+    <div>
+      <div className="mb-3">
+        <div id="modal"></div>
+        <Select handleOptChange={handleOptChange} />
       </div>
-      <div className="mt-3">
-        SET LIMIT :{' '}
-        <InputNumber min={5} max={30} defaultValue={5} onChange={handleCount} />
-      </div>
+      <Table
+        key="unique"
+        defaultExpandAllRows={true}
+        tableLayout={'auto'}
+        columns={columns}
+        dataSource={users}
+        pagination={false}
+        loading={loading}
+      />
+      <Pagination
+        showQuickJumper
+        defaultCurrent={1}
+        total={totalCount}
+        pageSize={count}
+        onChange={onChange}
+      />
+      <InputNumber min={5} max={30} defaultValue={5} onChange={onChange} />
     </div>
   );
 };
-const EditableFormTable = Form.create()(observer(FetchPools));
-export default EditableFormTable;
+export default observer(FetchUsers);

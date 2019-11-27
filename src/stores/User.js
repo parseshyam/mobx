@@ -1,6 +1,8 @@
 import { decorate, observable, action } from 'mobx';
 import { GetUsersPost, blockOrDelete } from 'services';
-
+import Axios from 'axios';
+const ngrok = 'http://4c80f1f9.ngrok.io';
+const url = `${ngrok}/admin/getPools`;
 export class UserStore {
   constructor(rootStore) {
     this.root = rootStore;
@@ -11,7 +13,7 @@ export class UserStore {
   totalCount = 0;
   blockLoading = null;
   deleteLoading = null;
-  editLoading = null;
+
   getUsers = async (page, count, body) => {
     this.loading = true;
     try {
@@ -35,15 +37,15 @@ export class UserStore {
   };
 
   delete = async userId => {
-    this.loading = true;
     this.deleteLoading = userId;
+    this.loading = true;
     try {
       const response = await blockOrDelete({
-        url: `/admin/delete/${userId}`,
+        url: `/admin/user/delete/${userId}`,
       });
       if (response) {
         let item = this.users.findIndex(item => item.id === userId);
-        this.users[item].deletedAt = new Date();
+        this.users[item].deletedAt = Date.parse(new Date());
       }
     } catch (error) {
       console.log(error);
@@ -54,11 +56,11 @@ export class UserStore {
   };
 
   unDelete = async userId => {
-    this.loading = true;
     this.deleteLoading = userId;
+    this.loading = true;
     try {
       const response = await blockOrDelete({
-        url: `/admin/unDelete/${userId}`,
+        url: `/admin/user/unDelete/${userId}`,
       });
       if (response) {
         let item = this.users.findIndex(item => item.id === userId);
@@ -77,7 +79,7 @@ export class UserStore {
     this.loading = true;
     try {
       const response = await blockOrDelete({
-        url: `/admin/block/${userId}`,
+        url: `/admin/user/block/${userId}`,
       });
       console.log(response);
       if (response) {
@@ -97,9 +99,8 @@ export class UserStore {
     this.loading = true;
     try {
       const response = await blockOrDelete({
-        url: `/admin/unBlock/${userId}`,
+        url: `/admin/user/unBlock/${userId}`,
       });
-      console.log(response);
       if (response) {
         let item = this.users.findIndex(item => item.id === userId);
         this.users[item].isBlocked = false;
@@ -112,22 +113,24 @@ export class UserStore {
     }
   };
 
-  editUser = async userId => {
-    this.blockLoading = userId;
+  editUser = async (body, id) => {
+    // this.blockLoading = id;
+    console.log('BODY', body, id);
     this.loading = true;
     try {
-      const response = await blockOrDelete({
-        url: `/admin/block/${userId}`,
-      });
-      console.log(response);
-      if (response) {
-        let item = this.users.findIndex(item => item.id === userId);
-        this.users[item].isBlocked = true;
-      }
+      let updateUser = await Axios.post(
+        `${ngrok}${`/admin/updateUser/${id}`}`,
+        body
+      );
+      console.log(updateUser);
+      // if (response) {
+      //   let item = this.users.findIndex(item => item.id === id);
+      //   this.users[item].isBlocked = true;
+      // }
     } catch (error) {
       console.log(error);
     } finally {
-      this.blockLoading = null;
+      // this.blockLoading = null;
       this.loading = false;
     }
   };
@@ -135,7 +138,7 @@ export class UserStore {
 
 decorate(UserStore, {
   users: observable,
-  getUsers: observable,
+  getUsers: action,
   errors: observable,
   delete: action,
   block: action,

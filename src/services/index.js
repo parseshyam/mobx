@@ -1,6 +1,5 @@
 import axios from 'axios';
-const BASE_URL = 'http://9022c60a.ngrok.io';
-
+const BASE_URL = 'http://4c80f1f9.ngrok.io';
 export const post = async ({ url, body, headers }) => {
   console.log('INSIDE SERVICE BODY', body, typeof body);
   try {

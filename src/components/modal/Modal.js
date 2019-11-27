@@ -1,15 +1,17 @@
-import { Modal, Button } from 'antd';
+import { Modal, Button, Input, Checkbox } from 'antd';
 import React from 'react';
 export default class App extends React.Component {
   state = {
-    ModalText: 'Content of the modal',
-    visible: false,
-    confirmLoading: false,
+    firstName: this.props.data.firstName,
+    lastName: this.props.data.lastName,
+    phoneNumber: this.props.data.lastName,
+    about: this.props.data.about,
+    email: this.props.data.email,
   };
 
-  showModal = () => {
+  assignValues = event => {
     this.setState({
-      visible: true,
+      [event.target.name]: event.target.value,
     });
   };
 
@@ -20,34 +22,68 @@ export default class App extends React.Component {
     });
     setTimeout(() => {
       this.setState({
-        visible: false,
         confirmLoading: false,
       });
     }, 2000);
   };
 
-  handleCancel = () => {
-    console.log('Clicked cancel button');
-    this.setState({
-      visible: false,
-    });
-  };
-
   render() {
-    const { visible, confirmLoading, ModalText } = this.state;
+    console.log(this.state);
+    const {
+      confirmLoading,
+      firstName,
+      lastName,
+      about,
+      phoneNumber,
+      email,
+    } = this.state;
+    const { visible, changeModal, data } = this.props;
     return (
       <div>
-        <Button type="primary" onClick={this.showModal}>
-          Open Modal with async logic
-        </Button>
         <Modal
           title="Title"
+          mask={true}
+          maskStyle={{ backgroundColor: 'rgba(255,255,255, 0.3)' }}
           visible={visible}
-          onOk={this.handleOk}
+          onOk={() => changeModal()}
           confirmLoading={confirmLoading}
-          onCancel={this.handleCancel}
+          onCancel={() => changeModal()}
         >
-          <p>{ModalText}</p>
+          <p>{JSON.stringify(data.id)}</p>
+          ID :{' '}
+          <Input
+            name="id"
+            placeholder="Basic usage"
+            value={data.id}
+            onChange={this.assignValues}
+          />
+          FIRST NAME :{' '}
+          <Input
+            name="firstName"
+            placeholder="Basic usage"
+            onChange={this.assignValues}
+            value={firstName}
+          />
+          LAST NAME :{' '}
+          <Input
+            name="lastName"
+            placeholder="Basic usage"
+            onChange={this.assignValues}
+            value={lastName}
+          />
+          EMAIL :{' '}
+          <Input
+            name="email"
+            placeholder="Basic usage"
+            onChange={this.assignValues}
+            value={email}
+          />
+          PHONE NO :{' '}
+          <Input
+            value={phoneNumber}
+            name="phoneNumber"
+            onChange={this.assignValues}
+          />
         </Modal>
       </div>
     );

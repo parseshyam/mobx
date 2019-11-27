@@ -56,7 +56,7 @@ const Home = ({ history }) => {
         {!checkAuth ? (
           'You need to login first'
         ) : (
-          <div className="container">
+          <div className="mt-4">
             <DisplayUsers loggedUser={admin} />
           </div>
         )}
