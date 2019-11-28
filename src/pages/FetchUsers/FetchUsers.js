@@ -1,7 +1,11 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useContext, useState, useEffect } from 'react';
 import { rootStore } from 'stores/Root';
 import { observer } from 'mobx-react';
-import { toJS } from 'mobx';
+// import { toJS } from 'mobx';
+import { Redirect, useHistory } from 'react-router-dom';
+import jwt from 'jsonwebtoken';
+import NavBar from 'components/NavBar/NavBar';
 import Select from '../../components/select/Select';
 import {
   Table,
@@ -75,6 +79,7 @@ const FetchPools = props => {
       totalCount,
       editUser,
     },
+    LoggedIn,
   } = useContext(rootStore);
   console.log(loading);
   const [page, setPage] = useState(1);
@@ -86,6 +91,18 @@ const FetchPools = props => {
   const [sortData, setSortData] = useState([
     { sortBy: 'ASC', sortValue: 'id' },
   ]);
+  const [loggedIn, setLoggedIn] = useState();
+
+  let history = useHistory();
+  useEffect(() => {
+    if (!LoggedIn);
+    const accessToken =
+      localStorage.getItem('accessToken') &&
+      localStorage.getItem('refreshToken');
+    if (!accessToken) history.push('/');
+    setLoggedIn(true);
+  }, []);
+
   useEffect(() => {
     let body = {};
     body.sort = sortData;
@@ -96,6 +113,13 @@ const FetchPools = props => {
   useEffect(() => {
     setData(users);
   }, [users]);
+
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    console.log(history);
+    history.push('/');
+  };
 
   const onChange = pageNumber => {
     setPage(pageNumber);
@@ -216,14 +240,13 @@ const FetchPools = props => {
       onFilter: (value, record) => record.firstName.includes(value),
       sorter: (a, b) => a.firstName.length - b.firstName.length,
       sortDirections: ['descend', 'ascend'],
-      onFilter: (value, record) => record.firstName.includes(value),
     },
     {
       title: 'Last Name',
       dataIndex: 'lastName',
       key: 'lastName',
       ...getColumnSearchProps('lastName'),
-      onFilter: (value, record) => record.lastName.indexOf(value) === 0,
+      onFilter: (value, record) => record.lastName.includes(value),
       sorter: (a, b) => a.lastName.length - b.lastName.length,
       sortDirections: ['descend', 'ascend'],
       editable: true,
@@ -385,35 +408,45 @@ const FetchPools = props => {
     };
   });
   return (
-    <div className="m-5">
-      <Select handleOptChange={handleOptChange} />
-      <EditableContext.Provider value={props.form}>
-        <Table
-          components={components}
-          bordered
-          dataSource={data}
-          columns={_columns}
-          rowClassName="editable-row"
-          pagination={false}
-          loading={loading}
-          defaultExpandAllRows={true}
-        />
-      </EditableContext.Provider>
-      <div className="mt-4">
-        <Pagination
-          showQuickJumper
-          defaultCurrent={1}
-          total={totalCount}
-          pageSize={count}
-          onChange={onChange}
-        />
+    <React.Fragment>
+      <NavBar loggedin={loggedIn} logout={logout} />
+      <div className="m-5">
+        <div className="m-2">
+          <Select handleOptChange={handleOptChange} />
+        </div>
+        <EditableContext.Provider value={props.form}>
+          <Table
+            components={components}
+            bordered
+            dataSource={data}
+            columns={_columns}
+            rowClassName="editable-row"
+            pagination={false}
+            loading={loading}
+            defaultExpandAllRows={true}
+          />
+        </EditableContext.Provider>
+        <div className="mt-4">
+          <Pagination
+            showQuickJumper
+            defaultCurrent={1}
+            total={totalCount}
+            pageSize={count}
+            onChange={onChange}
+          />
+        </div>
+        <div className="mt-3">
+          SET LIMIT :{' '}
+          <InputNumber
+            min={5}
+            max={30}
+            defaultValue={5}
+            onChange={handleCount}
+          />
+        </div>
       </div>
-      <div className="mt-3">
-        SET LIMIT :{' '}
-        <InputNumber min={5} max={30} defaultValue={5} onChange={handleCount} />
-      </div>
-    </div>
+    </React.Fragment>
   );
 };
-const EditableFormTable = Form.create()(observer(FetchPools));
-export default EditableFormTable;
+const FetchUsers = Form.create()(observer(FetchPools));
+export default FetchUsers;

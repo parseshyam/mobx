@@ -1,65 +1,43 @@
-import DisplayUsers from '../DisplayUsers';
-import React, { useEffect, useState } from 'react';
-import jwt from 'jsonwebtoken';
-import { Switch } from 'antd';
-import SideNavBar from '../../components/SideNavBar/SideNavBar';
-const Home = ({ history }) => {
-  const [checkAuth, setAuth] = useState(false);
+import React, { useEffect, useState, useContext } from 'react';
+import { Button } from 'antd';
+import NavBar from 'components/NavBar/NavBar';
+import { useHistory } from 'react-router-dom';
+import { rootStore } from 'stores/Root';
+
+const Home = props => {
+  const { LoggedIn } = useContext(rootStore);
   const [error, setError] = useState(null);
-  const [admin, setAdmin] = useState(null);
-  const [logout, setLogout] = useState(false);
+  const [loggedIn, setLoggedIn] = useState();
+  let history = useHistory();
 
   useEffect(() => {
-    console.log('HERE');
-    try {
-      const accessToken = localStorage.getItem('accessToken');
-      const verifyToken = jwt.verify(accessToken, 'accessToken');
-      if (verifyToken) {
-        setAuth(true);
-        setLogout(false);
-        setAdmin(verifyToken.payload.userEmail);
-      }
-      console.log(verifyToken.payload.userEmail);
-    } catch (error) {
-      console.log(error);
-      setError(error.message);
-      setLogout(true);
-    }
+    if (!LoggedIn);
+    const accessToken =
+      localStorage.getItem('accessToken') &&
+      localStorage.getItem('refreshToken');
+    if (!accessToken) history.push('/');
+    setLoggedIn(true);
   }, []);
 
-  useEffect(() => {
-    if (logout === true) {
-      localStorage.setItem('accessToken', '');
-      localStorage.setItem('refreshToken', '');
-    }
-  }, [logout]);
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    console.log(history);
+    history.push('/');
+  };
 
   return (
     <React.Fragment>
-      {logout ? history.push('/login') : null}
+      <NavBar loggedin={loggedIn} logout={logout} />
       <div className="m-5">
-        <Switch
-          size="default"
-          checkedChildren="Logout"
-          unCheckedChildren="Login"
-          checked={!logout}
-          onChange={() => setLogout(true)}
-        />
-        {/* {!logout ? (
-          <button className="btn btn-primary" onClick={() => setLogout(true)}>
-            LOG OUT
-          </button>
-        ) : null} */}
-      </div>
-      <div>{error !== null ? error : 'Correct Signature'}</div>
-      <div>
-        {!checkAuth ? (
-          'You need to login first'
-        ) : (
-          <div className="mt-4">
-            <DisplayUsers loggedUser={admin} />
+        <div className="m-2">
+          {error !== null ? error : 'Signature verified !'}
+          <div>
+            <Button type="primary" onClick={logout}>
+              LOGOUT
+            </Button>
           </div>
-        )}
+        </div>
       </div>
     </React.Fragment>
   );

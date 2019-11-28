@@ -1,8 +1,7 @@
 import { decorate, observable, action } from 'mobx';
 import { GetUsersPost, blockOrDelete } from 'services';
 import Axios from 'axios';
-const ngrok = 'http://4c80f1f9.ngrok.io';
-const url = `${ngrok}/admin/getPools`;
+const { ngrok } = require('../config');
 export class UserStore {
   constructor(rootStore) {
     this.root = rootStore;

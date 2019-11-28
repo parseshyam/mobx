@@ -1,7 +1,9 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { rootStore } from 'stores/Root';
 import { observer } from 'mobx-react';
-import { toJS } from 'mobx';
+import NavBar from 'components/NavBar/NavBar';
+import { useHistory } from 'react-router-dom';
+import Select from '../../components/select/PoolsSortSelect';
 import {
   Table,
   Input,
@@ -58,23 +60,20 @@ const EditableCell = props => {
   };
   return <EditableContext.Consumer>{renderCell}</EditableContext.Consumer>;
 };
-// address
-// categoryId
-// contactEmail
-// contactName
-// contactPhone
-// createdAt
-// deletedAt
-// description
-// id
-// location
-// pictures
-// poolName
-// updatedAt
 
 const FetchPools = props => {
   const {
-    PoolsStore: { loading, pools, getPools, totalCount, updatePool },
+    PoolsStore: {
+      loading,
+      pools,
+      getPools,
+      totalCount,
+      updatePool,
+      deleteLoading,
+      deletePool,
+      unDeletePool,
+    },
+    LoggedIn,
   } = useContext(rootStore);
   console.log(loading);
   const [page, setPage] = useState(1);
@@ -83,9 +82,26 @@ const FetchPools = props => {
   const [editingKey, setEditingKey] = useState('');
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
+  const [loggedIn, setLoggedIn] = useState();
+  const [sortData, setSortData] = useState([
+    { sortBy: 'ASC', sortValue: 'id' },
+  ]);
+  let history = useHistory();
   useEffect(() => {
-    getPools(page, count, {});
-  }, [page, count]);
+    if (!LoggedIn);
+    const accessToken =
+      localStorage.getItem('accessToken') &&
+      localStorage.getItem('refreshToken');
+    if (!accessToken) history.push('/');
+    setLoggedIn(true);
+  }, []);
+
+  useEffect(() => {
+    let body = {};
+    body.sort = sortData;
+    body.search = [];
+    getPools(page, count, body);
+  }, [page, count, sortData]);
 
   useEffect(() => {
     setData(pools);
@@ -94,6 +110,31 @@ const FetchPools = props => {
   const onChange = pageNumber => {
     setPage(pageNumber);
   };
+
+  const handleOptChange = (value = []) => {
+    let array = [];
+    if (value.length <= 0) {
+      setSortData([
+        {
+          sortBy: 'ASC',
+          sortValue: 'id',
+        },
+      ]);
+    } else {
+      value.map(val => {
+        return array.push(JSON.parse(val));
+      });
+      setSortData(array);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    console.log(history);
+    history.push('/');
+  };
+
   let searchInput = null;
   const getColumnSearchProps = dataIndex => ({
     filterDropdown: ({
@@ -193,7 +234,6 @@ const FetchPools = props => {
       onFilter: (value, record) => record.address.includes(value),
       sorter: (a, b) => a.address.length - b.address.length,
       sortDirections: ['descend', 'ascend'],
-      onFilter: (value, record) => record.address.includes(value),
     },
     {
       key: 'categoryId',
@@ -210,7 +250,6 @@ const FetchPools = props => {
       onFilter: (value, record) => record.contactEmail.includes(value),
       sorter: (a, b) => a.address.contactEmail - b.contactEmail.length,
       sortDirections: ['descend', 'ascend'],
-      onFilter: (value, record) => record.contactEmail.includes(value),
     },
     {
       key: 'contactName',
@@ -221,7 +260,6 @@ const FetchPools = props => {
       onFilter: (value, record) => record.contactName.includes(value),
       sorter: (a, b) => a.contactName.length - b.contactName.length,
       sortDirections: ['descend', 'ascend'],
-      onFilter: (value, record) => record.contactName.includes(value),
     },
     {
       key: 'contactPhone',
@@ -232,7 +270,6 @@ const FetchPools = props => {
       onFilter: (value, record) => record.contactPhone.includes(value),
       sorter: (a, b) => a.contactPhone.length - b.contactPhone.length,
       sortDirections: ['descend', 'ascend'],
-      onFilter: (value, record) => record.contactPhone.includes(value),
     },
     {
       key: 'createdAt',
@@ -255,7 +292,6 @@ const FetchPools = props => {
       onFilter: (value, record) => record.description.includes(value),
       sorter: (a, b) => a.description.length - b.description.length,
       sortDirections: ['descend', 'ascend'],
-      onFilter: (value, record) => record.description.includes(value),
     },
     {
       key: 'location',
@@ -272,7 +308,26 @@ const FetchPools = props => {
       onFilter: (value, record) => record.poolName.includes(value),
       sorter: (a, b) => a.poolName.length - b.poolName.length,
       sortDirections: ['descend', 'ascend'],
-      onFilter: (value, record) => record.poolName.includes(value),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (text, record) => (
+        <span>
+          {console.log(123, deleteLoading === record.id)}
+          <Button
+            loading={deleteLoading === record.id}
+            onClick={() => {
+              record.deletedAt !== null
+                ? unDeletePool(record.id)
+                : deletePool(record.id);
+            }}
+            type={record.deletedAt !== null ? 'primary' : 'danger'}
+          >
+            {record.deletedAt !== null ? 'UN DELETE' : 'DELETE'}
+          </Button>
+        </span>
+      ),
     },
     {
       title: 'operation',
@@ -357,34 +412,47 @@ const FetchPools = props => {
     };
   });
   return (
-    <div className="m-5">
-      <EditableContext.Provider value={props.form}>
-        <Table
-          components={components}
-          bordered
-          dataSource={data}
-          columns={_columns}
-          rowClassName="editable-row"
-          pagination={false}
-          loading={loading}
-          defaultExpandAllRows={true}
-        />
-      </EditableContext.Provider>
-      di
-      <div className="mt-4">
-        <Pagination
-          showQuickJumper
-          defaultCurrent={1}
-          total={totalCount}
-          pageSize={count}
-          onChange={onChange}
-        />
+    <React.Fragment>
+      {/* handleOptChange={handleOptChange} */}
+      <NavBar loggedin={loggedIn} logout={logout} />
+      {/* {auth ? null : <Redirect to="/login" />} */}
+      <div className="m-5">
+        <div className="m-2">
+          <Select handleOptChange={handleOptChange} />
+        </div>
+        <EditableContext.Provider value={props.form}>
+          <Table
+            components={components}
+            bordered
+            dataSource={data}
+            columns={_columns}
+            rowClassName="editable-row"
+            pagination={false}
+            loading={loading}
+            defaultExpandAllRows={true}
+          />
+        </EditableContext.Provider>
+
+        <div className="mt-4">
+          <Pagination
+            showQuickJumper
+            defaultCurrent={1}
+            total={totalCount}
+            pageSize={count}
+            onChange={onChange}
+          />
+        </div>
+        <div className="mt-3">
+          SET LIMIT :{' '}
+          <InputNumber
+            min={5}
+            max={30}
+            defaultValue={5}
+            onChange={handleCount}
+          />
+        </div>
       </div>
-      <div className="mt-3">
-        SET LIMIT :{' '}
-        <InputNumber min={5} max={30} defaultValue={5} onChange={handleCount} />
-      </div>
-    </div>
+    </React.Fragment>
   );
 };
 const EditableFormTable = Form.create()(observer(FetchPools));

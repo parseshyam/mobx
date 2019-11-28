@@ -1,6 +1,6 @@
-import { decorate, observable, action, comparer } from 'mobx';
+import { decorate, observable, action } from 'mobx';
 import Axios from 'axios';
-const ngrok = 'http://4c80f1f9.ngrok.io';
+import { ngrok } from '../config';
 const url = `${ngrok}/admin/getPools`;
 export class PoolsStore {
   constructor(rootStore) {
@@ -10,6 +10,7 @@ export class PoolsStore {
   pools = [];
   totalCount = 0;
   editLoading = null;
+  deleteLoading = null;
   getPools = async (page = 1, count = 10, body = {}) => {
     this.loading = true;
     try {
@@ -31,6 +32,7 @@ export class PoolsStore {
   };
 
   updatePool = async (body, id) => {
+    // this.deleteLoading = id;
     this.loading = true;
     console.log(body);
     try {
@@ -38,11 +40,49 @@ export class PoolsStore {
         `${ngrok}${`/admin/updatePoolsById/${id}`}`,
         body
       );
+
       console.log(updatePool);
     } catch (error) {
       console.log(error);
     } finally {
       this.loading = false;
+      // this.deleteLoading = null;
+    }
+  };
+
+  deletePool = async id => {
+    this.loading = id;
+    this.deleteLoading = id;
+    try {
+      let deletePool = await Axios.delete(
+        `${ngrok}${`/admin/pool/delete/${id}`}`
+      );
+      let item = this.pools.findIndex(item => item.id === id);
+      this.pools[item].deletedAt = Date.parse(new Date());
+      console.log(deletePool);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      this.loading = false;
+      this.deleteLoading = null;
+    }
+  };
+
+  unDeletePool = async id => {
+    this.loading = true;
+    this.deleteLoading = id;
+    try {
+      let unDeletePool = await Axios.delete(
+        `${ngrok}${`/admin/pool/unDelete/${id}`}`
+      );
+      let item = this.pools.findIndex(item => item.id === id);
+      this.pools[item].deletedAt = null;
+      console.log(unDeletePool);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      this.loading = false;
+      this.deleteLoading = null;
     }
   };
 }
@@ -53,4 +93,7 @@ decorate(PoolsStore, {
   editLoading: observable,
   totalCount: observable,
   getPools: action,
+  deleteLoading: observable,
+  deletePool: action,
+  unDeletePool: action,
 });

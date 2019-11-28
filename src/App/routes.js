@@ -2,35 +2,34 @@ import React, { Suspense, lazy } from 'react';
 import { createBrowserHistory } from 'history';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import { Spin, Icon } from 'antd';
-import Header from '../components/common/Header';
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 export const history = createBrowserHistory();
 
 export const routes = {
+  login: {
+    path: '/',
+    exact: true,
+    component: lazy(() => import('pages/Login/Login')),
+  },
   home: {
     path: '/home',
     exact: true,
     component: lazy(() => import('pages/HomePage/Home')),
-  },
-  login: {
-    path: '/login',
-    exact: true,
-    component: lazy(() => import('pages/Login/Login')),
   },
   signup: {
     path: '/signup',
     exact: true,
     component: lazy(() => import('pages/Signup/Signup')),
   },
-  page1: {
-    path: '/page1',
+  fetchPools: {
+    path: '/fetchPools',
     exact: true,
-    component: lazy(() => import('pages/Page1/Page1')),
+    component: lazy(() => import('pages/FetchPools/fetchPools')),
   },
-  page2: {
-    path: '/page2',
+  fetchUsers: {
+    path: '/fetchUsers',
     exact: true,
-    component: lazy(() => import('pages/Page2/Page2')),
+    component: lazy(() => import('pages/FetchUsers/FetchUsers')),
   },
   page3: {
     path: '/page3',
@@ -58,7 +57,7 @@ export const Routes = () => {
       }
     >
       <BrowserRouter history={createBrowserHistory}>
-        <Header />
+        {/* <Header /> */}
         <Switch>
           {renderRoutes.map(([key, val]) => (
             <Route
