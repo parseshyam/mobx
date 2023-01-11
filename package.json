@@ -10,7 +10,7 @@
     "craco-antd": "^1.14.1",
     "dotenv": "^8.2.0",
     "history": "^4.10.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "mobx": "^5.15.0",
     "mobx-react": "^6.1.4",
     "node-sass": "^4.13.0",
